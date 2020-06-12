@@ -16,6 +16,8 @@ trait Image {
 
   def withPixel(x: Int, y: Int, color: Color): Image
 
+  def mutable: MutableImage
+
   def toBufferedImage: BufferedImage = {
     val image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
 
@@ -30,10 +32,16 @@ trait Image {
   }
 }
 
+trait MutableImage extends Image {
+  def immutable: Image = mutable
+
+  def setPixel(x: Int, y: Int, color: Color): Unit
+}
+
 object Image {
   private def pixelIndex(x: Int, y: Int, width: Int): Int = x + y * width
 
-  case class ImageImpl(width: Int, height: Int, private val pixels: Array[Color]) extends Image {
+  case class ImageImpl(width: Int, height: Int, private val pixels: Array[Color]) extends MutableImage {
     require(pixels.length >= width * height)
 
     def pixel(x: Int, y: Int): Color = pixels(Image.pixelIndex(x, y, width))
@@ -41,6 +49,10 @@ object Image {
     private def withPixels(pixels: Array[Color]): Image = copy(pixels = pixels)
 
     def withPixel(x: Int, y: Int, color: Color): Image = withPixels(pixels.updated(Image.pixelIndex(x, y, width), color))
+
+    override def setPixel(x: Color, y: Color, color: Color): Unit = pixels(Image.pixelIndex(x, y, width)) = color
+
+    override def mutable: MutableImage = copy(pixels = pixels.clone())
   }
 
   def blank(width: Int, height: Int, color: Color): Image = {
