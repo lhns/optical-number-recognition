@@ -1,12 +1,11 @@
 package onr
 
+import cats.effect.IO
+import cats.effect.std.Queue
+import cats.effect.unsafe.IORuntime
 import fs2._
-import fs2.concurrent.Queue
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.input.MouseEvent
-import monix.eval.Task
-import monix.execution.Scheduler
-import monix.execution.schedulers.CanBlock
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
@@ -15,10 +14,10 @@ import scalafx.scene.canvas.{Canvas, GraphicsContext}
 case class CanvasWindow(title: String,
                         width: Double,
                         height: Double,
-                        images: Stream[Task, Image]) {
-  private val onClickQueue = Queue.bounded[Task, MouseEvent](10).runSyncUnsafe()(Scheduler.global, CanBlock.permit)
+                        images: Stream[IO, Image]) {
+  private val onClickQueue = Queue.bounded[IO, MouseEvent](10).unsafeRunSync()(IORuntime.global)
 
-  def onClickStream: Stream[Task, MouseEvent] = onClickQueue.dequeue
+  def onClickStream: Stream[IO, MouseEvent] = Stream.fromQueueUnterminated(onClickQueue)
 
   def show(): Unit =
     new JFXApp {
@@ -34,20 +33,22 @@ case class CanvasWindow(title: String,
 
           content = canvas
 
-          canvas.onMouseClicked = (event: MouseEvent) => onClickQueue.enqueue1(event).runAsyncAndForget(Scheduler.global)
+          canvas.onMouseClicked = (event: MouseEvent) => onClickQueue.offer(event).unsafeRunSync()(IORuntime.global)
         }
       }
 
       private val graphics2d: GraphicsContext = canvas.graphicsContext2D
 
-      images.map { image =>
-        val fxImage = SwingFXUtils.toFXImage(image.toBufferedImage, null)
-        stage.setWidth(image.width)
-        stage.setHeight(image.height)
-        canvas.setWidth(image.width)
-        canvas.setHeight(image.height)
-        graphics2d.drawImage(fxImage, 0, 0)
+      images.evalMap { image =>
+        IO.blocking {
+          val fxImage = SwingFXUtils.toFXImage(image.toBufferedImage, null)
+          stage.setWidth(image.width)
+          stage.setHeight(image.height)
+          canvas.setWidth(image.width)
+          canvas.setHeight(image.height)
+          graphics2d.drawImage(fxImage, 0, 0)
 
-      }.compile.drain.runToFuture(Scheduler.singleThread("render-images"))
+        }
+      }.compile.drain.unsafeRunAndForget()(IORuntime.global)
     }.main(Array[String]())
 }

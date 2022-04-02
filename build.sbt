@@ -1,7 +1,7 @@
 name := "optical-number-recognition"
 version := "0.0.1-SNAPSHOT"
 
-scalaVersion := "2.13.2"
+scalaVersion := "2.13.8"
 
 def osName: String =
   if (scala.util.Properties.isLinux) "linux"
@@ -9,10 +9,15 @@ def osName: String =
   else if (scala.util.Properties.isWin) "win"
   else throw new Exception("Unknown platform!")
 
+val V = new {
+  val catsEffect = "3.3.8"
+  val fs2 = "3.2.5"
+}
+
 libraryDependencies ++= Seq(
-  "io.monix" %% "monix" % "3.2.2",
-  "co.fs2" %% "fs2-core" % "2.4.1",
-  "co.fs2" %% "fs2-io" % "2.4.1",
+  "co.fs2" %% "fs2-core" % V.fs2,
+  "co.fs2" %% "fs2-io" % V.fs2,
+  "org.typelevel" %% "cats-effect" % V.catsEffect,
   "org.openjfx" % "javafx-base" % "14.0.1" classifier osName,
   "org.openjfx" % "javafx-controls" % "14.0.1" classifier osName,
   "org.openjfx" % "javafx-graphics" % "14.0.1" classifier osName,
