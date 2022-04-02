@@ -15,7 +15,7 @@ case class CanvasWindow(title: String,
                         width: Double,
                         height: Double,
                         images: Stream[IO, Image]) {
-  private val onClickQueue = Queue.bounded[IO, MouseEvent](10).unsafeRunSync()(IORuntime.global)
+  private val onClickQueue = Queue.circularBuffer[IO, MouseEvent](10).unsafeRunSync()(IORuntime.global)
 
   def onClickStream: Stream[IO, MouseEvent] = Stream.fromQueueUnterminated(onClickQueue)
 

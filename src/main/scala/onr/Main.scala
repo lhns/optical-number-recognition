@@ -1,6 +1,7 @@
 package onr
 
 import cats.effect.IO
+import cats.effect.unsafe.IORuntime
 import fs2._
 import onr.color._
 
@@ -13,7 +14,8 @@ object Main {
     val path2 = Paths.get("D:\\pierr\\Documents\\git\\optical-number-recognition\\src\\main\\resources\\IMG_20220401_185440.jpg")
     val path3 = Paths.get("D:\\pierr\\Documents\\git\\optical-number-recognition\\src\\main\\resources\\WhatsApp Image 2022-04-01 at 15.30.21.jpeg")
     val path4 = Paths.get("D:\\pierr\\Documents\\git\\optical-number-recognition\\src\\main\\resources\\WhatsApp Image 2022-04-02 at 14.50.57.jpeg")
-    val image = Image.read(path4)
+    val image = Image.read(path3).rect(100, 600, 800, 400)
+    val numbers = Image.read(Paths.get("D:\\pierr\\Documents\\git\\optical-number-recognition\\src\\main\\resources\\numbers.png"))
 
     def brightness(color: Color): Int = color.r + color.g + color.b
 
@@ -58,6 +60,18 @@ object Main {
 
     val newImage = momochrome(image, /*150*/ (avgBrightness(image) * 0.4).toInt)
 
-    CanvasWindow("Test", 10, 10, Stream.repeatEval(IO(newImage))).show()
+    @volatile
+    var renderedImage = newImage
+
+    val window = CanvasWindow("Test", 10, 10, Stream.repeatEval(IO {
+      renderedImage
+    }))
+    window.onClickStream.map { event =>
+      val newRenderedImage = newImage.mutable
+      newRenderedImage.setPixels(event.getX.toInt, event.getY.toInt, numbers)
+      renderedImage = newRenderedImage
+      println(event)
+    }.compile.drain.unsafeRunAndForget()(IORuntime.global)
+    window.show()
   }
 }

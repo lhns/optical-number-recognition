@@ -1,11 +1,11 @@
 package onr
 
+import onr.color._
+
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.nio.file.{Files, Path}
-
 import javax.imageio.ImageIO
-import onr.color._
 
 trait Image {
   def width: Int
@@ -17,6 +17,29 @@ trait Image {
   def withPixel(x: Int, y: Int, color: Color): Image
 
   def mutable: MutableImage
+
+  def rect(newX: Int, newY: Int, newWidth: Int, newHeight: Int): Image = new Image {
+    override def width: Color = newWidth
+
+    override def height: Color = newHeight
+
+    override def pixel(x: Color, y: Color): Color = Image.this.pixel(x + newX, y + newY)
+
+    override def withPixel(x: Color, y: Color, color: Color): Image = {
+      val mutableImage = mutable
+      mutableImage.setPixel(x, y, color)
+      mutableImage
+    }
+
+    override def mutable: MutableImage = {
+      val mutableImage = Image.blankMutable(newWidth, newHeight, Color.Black)
+      for {
+        y <- 0 until newHeight
+        x <- 0 until newWidth
+      } mutableImage.setPixel(x, y, pixel(x, y))
+      mutableImage
+    }
+  }
 
   def toBufferedImage: BufferedImage = {
     val image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
@@ -36,6 +59,14 @@ trait MutableImage extends Image {
   def immutable: Image = mutable
 
   def setPixel(x: Int, y: Int, color: Color): Unit
+
+  def setPixels(xOffset: Int, yOffset: Int, image: Image): Unit = {
+    for {
+      y <- 0 until image.height
+      x <- 0 until image.width
+    } if (x + xOffset < width && y + yOffset < height)
+      setPixel(x + xOffset, y + yOffset, image.pixel(x, y))
+  }
 }
 
 object Image {
@@ -55,10 +86,13 @@ object Image {
     override def mutable: MutableImage = copy(pixels = pixels.clone())
   }
 
-  def blank(width: Int, height: Int, color: Color): Image = {
+  def blankMutable(width: Int, height: Int, color: Color): MutableImage = {
     val pixels = Array.fill(pixelIndex(0, height, width))(color)
     ImageImpl(width, height, pixels)
   }
+
+  def blank(width: Int, height: Int, color: Color): Image =
+    blankMutable(width, height, color)
 
   def fromBufferedImage(bufferedImage: BufferedImage): Image = {
     val width = bufferedImage.getWidth
