@@ -41,8 +41,9 @@ object Main {
     }
 
 
-    val image = ImageCleanup.cleanup(ImmutableImage.loader().fromPath(path3))
-      .trim(20, 600, 20, 800)
+    val image = ImageCleanup.cleanup(ImmutableImage.loader().fromPath(path4))
+      //.trim(20, 600, 20, 800)
+      .trim(350, 250, 350, 100)
       .max(1200, 1000)
 
     def isBlack(pixel: Pixel): Boolean = pixel.argb == 0xFF << 24
@@ -54,11 +55,16 @@ object Main {
         yOff <- 0 until stencil.height
         xOff <- 0 until stencil.width
       } {
-        val imagePixel = image.pixel(x + xOff, y + yOff)
-        val numbersPixel = stencil.pixel(xOff, yOff)
-        if (brightness(imagePixel) == 0 && brightness(numbersPixel) < 50) {
-          positive(x + xOff, y + yOff)
-        } else if (brightness(imagePixel) == 0 && brightness(numbersPixel) > 160 && brightness(numbersPixel) < 255) {
+        val imagePixelBrightness = brightness(image.pixel(x + xOff, y + yOff))
+        val stencilPixelBrightness = brightness(stencil.pixel(xOff, yOff))
+
+        if (stencilPixelBrightness < 50) {
+          if (imagePixelBrightness == 0) {
+            positive(x + xOff, y + yOff)
+          } else {
+            negative(x + xOff, y + yOff)
+          }
+        } else if (stencilPixelBrightness > 160 && stencilPixelBrightness < 255 && imagePixelBrightness == 0) {
           negative(x + xOff, y + yOff)
         }
       }
@@ -111,6 +117,7 @@ object Main {
     }))
     window.onClickStream.evalMap { event =>
       IO {
+        val image = renderedImage
         println(event)
         val ex = event.getX.toInt
         val ey = event.getY.toInt
