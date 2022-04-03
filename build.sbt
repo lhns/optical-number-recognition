@@ -12,11 +12,15 @@ def osName: String =
 val V = new {
   val catsEffect = "3.3.8"
   val fs2 = "3.2.5"
+  val scrimage = "4.0.31"
 }
 
 libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-core" % V.fs2,
   "co.fs2" %% "fs2-io" % V.fs2,
+  "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
+  "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
+  "org.bytedeco" % "javacv-platform" % "1.5.7",
   "org.typelevel" %% "cats-effect" % V.catsEffect,
   "org.openjfx" % "javafx-base" % "14.0.1" classifier osName,
   "org.openjfx" % "javafx-controls" % "14.0.1" classifier osName,

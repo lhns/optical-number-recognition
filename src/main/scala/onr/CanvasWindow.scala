@@ -3,6 +3,7 @@ package onr
 import cats.effect.IO
 import cats.effect.std.Queue
 import cats.effect.unsafe.IORuntime
+import com.sksamuel.scrimage.MutableImage
 import fs2._
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.input.MouseEvent
@@ -14,7 +15,7 @@ import scalafx.scene.canvas.{Canvas, GraphicsContext}
 case class CanvasWindow(title: String,
                         width: Double,
                         height: Double,
-                        images: Stream[IO, Image]) {
+                        images: Stream[IO, MutableImage]) {
   private val onClickQueue = Queue.circularBuffer[IO, MouseEvent](10).unsafeRunSync()(IORuntime.global)
 
   def onClickStream: Stream[IO, MouseEvent] = Stream.fromQueueUnterminated(onClickQueue)
@@ -41,13 +42,15 @@ case class CanvasWindow(title: String,
 
       images.evalMap { image =>
         IO.blocking {
-          val fxImage = SwingFXUtils.toFXImage(image.toBufferedImage, null)
+          val fxImage = SwingFXUtils.toFXImage(image.awt(), null)
           stage.setWidth(image.width)
           stage.setHeight(image.height)
           canvas.setWidth(image.width)
           canvas.setHeight(image.height)
           graphics2d.drawImage(fxImage, 0, 0)
-
+        }.onError { throwable =>
+          throwable.printStackTrace()
+          IO.raiseError(throwable)
         }
       }.compile.drain.unsafeRunAndForget()(IORuntime.global)
     }.main(Array[String]())
