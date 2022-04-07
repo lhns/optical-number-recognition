@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
   "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
   "org.bytedeco" % "javacv-platform" % "1.5.7",
+  "org.http4s" %% "http4s-jdk-http-client" % "0.5.0",
   "org.typelevel" %% "cats-effect" % V.catsEffect,
   "org.openjfx" % "javafx-base" % "14.0.1" classifier osName,
   "org.openjfx" % "javafx-controls" % "14.0.1" classifier osName,

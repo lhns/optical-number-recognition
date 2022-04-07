@@ -12,7 +12,7 @@ object Converter {
     Files.list(dir).iterator().asScala.filter(e => e.getFileName.toString.matches(".*\\.jpe?g")).foreach { file =>
       val outDir = dir.resolve("bw")
       //Files.createDirectory(outDir)
-      ImageCleanup.cleanup(ImmutableImage.loader().fromPath(file)).output(PngWriter.MinCompression, outDir.resolve(file.getFileName))
+      ImageCleanup.cleanup(ImmutableImage.loader().fromPath(file), 0.7).output(PngWriter.MinCompression, outDir.resolve(file.getFileName))
     }
   }
 }

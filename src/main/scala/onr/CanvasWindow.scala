@@ -43,8 +43,8 @@ case class CanvasWindow(title: String,
       images.evalMap { image =>
         IO.blocking {
           val fxImage = SwingFXUtils.toFXImage(image.awt(), null)
-          stage.setWidth(image.width)
-          stage.setHeight(image.height)
+          stage.setWidth(image.width + 25)
+          stage.setHeight(image.height + 30)
           canvas.setWidth(image.width)
           canvas.setHeight(image.height)
           graphics2d.drawImage(fxImage, 0, 0)

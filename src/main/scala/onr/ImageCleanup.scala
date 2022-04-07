@@ -8,11 +8,11 @@ import java.awt
 import scala.util.chaining._
 
 object ImageCleanup {
-  def cleanup(image: ImmutableImage): ImmutableImage = {
+  def cleanup(image: ImmutableImage, factor: Double): ImmutableImage = {
     image
       .pipe { image =>
         val thresh = avgBrightness(image)
-        image.filter(new ThresholdFilter((thresh * 0.7).toInt, awt.Color.BLACK.getRGB, awt.Color.WHITE.getRGB))
+        image.filter(new ThresholdFilter((thresh * factor).toInt, awt.Color.BLACK.getRGB, awt.Color.WHITE.getRGB))
       }
   }
 
