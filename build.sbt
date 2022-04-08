@@ -12,6 +12,7 @@ def osName: String =
 val V = new {
   val catsEffect = "3.3.8"
   val fs2 = "3.2.5"
+  val http4s = "0.23.11"
   val scrimage = "4.0.31"
 }
 
@@ -20,7 +21,11 @@ libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-io" % V.fs2,
   "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
   "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
+  "de.lolhens" %% "http4s-spa" % "0.3.1",
+  "de.lolhens" %% "remote-io-http4s" % "0.0.1",
   "org.bytedeco" % "javacv-platform" % "1.5.7",
+  "org.http4s" %% "http4s-blaze-server" % V.http4s,
+  "org.http4s" %% "http4s-dsl" % V.http4s,
   "org.http4s" %% "http4s-jdk-http-client" % "0.5.0",
   "org.typelevel" %% "cats-effect" % V.catsEffect,
   "org.openjfx" % "javafx-base" % "14.0.1" classifier osName,
