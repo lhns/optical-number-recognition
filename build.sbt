@@ -98,7 +98,6 @@ lazy val server = project
       "de.lolhens" %% "http4s-spa" % "0.3.1",
       "de.lolhens" %% "remote-io-http4s" % "0.0.1",
       "io.circe" %% "circe-config" % "0.8.0",
-      "org.bytedeco" % "javacv-platform" % "1.5.7",
       "org.http4s" %% "http4s-blaze-server" % V.http4s,
       "org.http4s" %% "http4s-dsl" % V.http4s,
       "org.http4s" %% "http4s-jdk-http-client" % "0.7.0",
