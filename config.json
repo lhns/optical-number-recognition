@@ -1,60 +1,60 @@
 {
-  "stencilPath": "server\\src\\main\\resources\\numberwheel.png",
-  "espCam": {
-    "uri": "http://10.1.15.21",
-    "credentials": null
+  "stencilPath" : "server\\src\\main\\resources\\numberwheel.png",
+  "espCam" : {
+    "uri" : "http://10.1.15.21",
+    "credentials" : null
   },
-  "metricName": "onr_gas",
-  "decimalPlace": 3,
-  "cacheDuration": "1 minute",
-  "state": {
-    "height": 750,
-    "vectors": [
+  "metricName" : "onr_gas",
+  "decimalPlace" : 3,
+  "cacheDuration" : "1 minute",
+  "state" : {
+    "height" : 75,
+    "vectors" : [
       {
-        "x": 144,
-        "y": 282
+        "x" : 144,
+        "y" : 282
       },
       {
-        "x": 743,
-        "y": 284
+        "x" : 743,
+        "y" : 284
       },
       {
-        "x": 435,
-        "y": 283
+        "x" : 435,
+        "y" : 283
       },
       {
-        "x": 338,
-        "y": 285
+        "x" : 338,
+        "y" : 285
       },
       {
-        "x": 626,
-        "y": 290
+        "x" : 626,
+        "y" : 290
       },
       {
-        "x": 526,
-        "y": 287
+        "x" : 526,
+        "y" : 287
       },
       {
-        "x": 242,
-        "y": 283
+        "x" : 242,
+        "y" : 283
       },
       {
-        "x": 47,
-        "y": 284
+        "x" : 47,
+        "y" : 284
       }
     ],
-    "ignored": [
+    "ignored" : [
       {
-        "x": 411,
-        "y": 305,
-        "width": 46,
-        "height": 10
+        "x" : 411,
+        "y" : 305,
+        "width" : 46,
+        "height" : 10
       },
       {
-        "x": 314,
-        "y": 303,
-        "width": 48,
-        "height": 11
+        "x" : 314,
+        "y" : 303,
+        "width" : 48,
+        "height" : 11
       }
     ]
   }
