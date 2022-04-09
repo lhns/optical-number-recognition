@@ -17,7 +17,7 @@ object Server extends IOApp {
     val configPath = args.headOption.map(Paths.get(_)).getOrElse(throw new IllegalArgumentException("Missing command line parameter: config path"))
 
     def readConfig(): Config = {
-      io.circe.parser.decode[Config](
+      io.circe.config.parser.decode[Config](
         new String(Files.readAllBytes(configPath), StandardCharsets.UTF_8)
       ).toTry.get
     }

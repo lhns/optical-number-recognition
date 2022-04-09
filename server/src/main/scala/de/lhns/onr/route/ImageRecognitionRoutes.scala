@@ -24,15 +24,12 @@ import org.log4s.getLogger
 
 import java.awt
 import java.nio.file.{Files, Paths}
-import scala.concurrent.duration._
 
 class ImageRecognitionRoutes(config: Config,
                              parametersRepo: ParametersRepo[IO],
                              stencilIO: IO[Stencil],
                             ) {
   private val logger = getLogger
-
-  private val cacheTimeout = 1.minute
 
   private val cam = EspCam(config.espCam.uri, config.espCam.credentials)
 
@@ -47,7 +44,7 @@ class ImageRecognitionRoutes(config: Config,
           ImmutableImage.loader().fromBytes(bytes),
           thesholdFactor = 0.7
         ).max(800, 600)
-    }.cacheForUnsafe(cacheTimeout)
+    }.cacheForUnsafe(config.cacheDuration)
 
   private val imageIO2: IO[ImmutableImage] =
     IO.blocking(Files.readAllBytes(Paths.get("images/IMG_20220401_185456.jpg"))).map { bytes =>

@@ -1,13 +1,14 @@
 {
-  "stencilPath": "server/src/main/resources/numberwheel.png",
+  "stencilPath": "server\\src\\main\\resources\\numberwheel.png",
   "espCam": {
     "uri": "http://10.1.15.21",
     "credentials": null
   },
   "metricName": "onr_gas",
   "decimalPlace": 3,
+  "cacheDuration": "1 minute",
   "state": {
-    "height": 75,
+    "height": 750,
     "vectors": [
       {
         "x": 144,
