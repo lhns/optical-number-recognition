@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 object Server extends IOApp {
-
-
   override def run(args: List[String]): IO[ExitCode] = {
     val configPath = args.headOption.map(Paths.get(_)).getOrElse(throw new IllegalArgumentException("Missing command line parameter: config path"))
 
