@@ -1,37 +1,105 @@
-name := "optical-number-recognition"
-version := "0.0.1-SNAPSHOT"
+ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / name := (server / name).value
+name := (ThisBuild / name).value
 
-scalaVersion := "2.13.8"
+lazy val commonSettings: Seq[Setting[_]] = Seq(
+  version := {
+    val Tag = "refs/tags/(.*)".r
+    sys.env.get("CI_VERSION").collect { case Tag(tag) => tag }
+      .getOrElse("0.0.1-SNAPSHOT")
+  },
 
-def osName: String =
-  if (scala.util.Properties.isLinux) "linux"
-  else if (scala.util.Properties.isMac) "mac"
-  else if (scala.util.Properties.isWin) "win"
-  else throw new Exception("Unknown platform!")
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+
+  assembly / assemblyJarName := s"${name.value}-${version.value}.sh.bat",
+
+  assembly / assemblyOption := (assembly / assemblyOption).value
+    .withPrependShellScript(Some(AssemblyPlugin.defaultUniversalScript(shebang = false))),
+
+  assembly / assemblyMergeStrategy := {
+    case PathList(paths@_*) if paths.last == "module-info.class" => MergeStrategy.discard
+    case PathList("META-INF", "jpms.args") => MergeStrategy.discard
+    case x =>
+      val oldStrategy = (assembly / assemblyMergeStrategy).value
+      oldStrategy(x)
+  },
+)
 
 val V = new {
   val catsEffect = "3.3.8"
+  val circe = "0.14.1"
   val fs2 = "3.2.5"
   val http4s = "0.23.11"
+  val scalajsReact = "2.0.0"
   val scrimage = "4.0.31"
 }
 
-libraryDependencies ++= Seq(
-  "co.fs2" %% "fs2-core" % V.fs2,
-  "co.fs2" %% "fs2-io" % V.fs2,
-  "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
-  "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
-  "de.lolhens" %% "http4s-spa" % "0.3.1",
-  "de.lolhens" %% "remote-io-http4s" % "0.0.1",
-  "org.bytedeco" % "javacv-platform" % "1.5.7",
-  "org.http4s" %% "http4s-blaze-server" % V.http4s,
-  "org.http4s" %% "http4s-dsl" % V.http4s,
-  "org.http4s" %% "http4s-jdk-http-client" % "0.5.0",
-  "org.typelevel" %% "cats-effect" % V.catsEffect,
-  "org.openjfx" % "javafx-base" % "14.0.1" classifier osName,
-  "org.openjfx" % "javafx-controls" % "14.0.1" classifier osName,
-  "org.openjfx" % "javafx-graphics" % "14.0.1" classifier osName,
-  "org.openjfx" % "javafx-media" % "14.0.1" classifier osName,
-  "org.openjfx" % "javafx-swing" % "14.0.1" classifier osName,
-  "org.scalafx" %% "scalafx" % "14-R19"
-)
+lazy val root = project.in(file("."))
+  .settings(
+    publishArtifact := false
+  )
+  .aggregate(server)
+
+lazy val common = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "de.lolhens" %%% "cats-effect-utils" % "0.2.0",
+      "de.lolhens" %%% "remote-io-http4s" % "0.0.1",
+      "io.circe" %%% "circe-core" % V.circe,
+      "io.circe" %%% "circe-generic" % V.circe,
+      "io.circe" %%% "circe-parser" % V.circe,
+      "org.http4s" %%% "http4s-circe" % V.http4s,
+      "org.http4s" %%% "http4s-client" % V.http4s,
+      "org.typelevel" %%% "cats-effect" % V.catsEffect,
+    )
+  )
+
+lazy val commonJvm = common.jvm
+lazy val commonJs = common.js
+
+lazy val frontend = project
+  .enablePlugins(ScalaJSWebjarPlugin)
+  .dependsOn(commonJs)
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.github.japgolly.scalajs-react" %%% "core-bundle-cats_effect" % V.scalajsReact,
+      "com.github.japgolly.scalajs-react" %%% "extra" % V.scalajsReact,
+      "org.scala-js" %%% "scalajs-dom" % "2.1.0",
+      "org.http4s" %%% "http4s-dom" % "0.2.0"
+    ),
+
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+    },
+    scalaJSUseMainModuleInitializer := true,
+  )
+
+lazy val frontendWebjar = frontend.webjar
+  .settings(
+    webjarAssetReferenceType := Some("http4s"),
+    libraryDependencies += "org.http4s" %% "http4s-server" % V.http4s,
+  )
+
+lazy val server = project
+  .enablePlugins(BuildInfoPlugin)
+  .dependsOn(commonJvm, frontendWebjar)
+  .settings(commonSettings)
+  .settings(
+    name := "optical-number-recognition",
+
+    libraryDependencies ++= Seq(
+      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "co.fs2" %% "fs2-io" % V.fs2,
+      "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
+      "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
+      "de.lolhens" %% "http4s-spa" % "0.3.1",
+      "de.lolhens" %% "remote-io-http4s" % "0.0.1",
+      "org.bytedeco" % "javacv-platform" % "1.5.7",
+      "org.http4s" %% "http4s-blaze-server" % V.http4s,
+      "org.http4s" %% "http4s-dsl" % V.http4s,
+      "org.http4s" %% "http4s-jdk-http-client" % "0.7.0",
+    )
+  )

@@ -1,4 +1,4 @@
-package onr
+package de.lhns.onr
 
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.PngWriter

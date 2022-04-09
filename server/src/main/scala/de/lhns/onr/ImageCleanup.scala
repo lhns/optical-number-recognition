@@ -1,4 +1,4 @@
-package onr
+package de.lhns.onr
 
 import com.sksamuel.scrimage.filter.ThresholdFilter
 import com.sksamuel.scrimage.{ImmutableImage, MutableImage}

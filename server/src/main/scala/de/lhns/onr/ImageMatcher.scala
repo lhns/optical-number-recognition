@@ -1,4 +1,4 @@
-package onr
+package de.lhns.onr
 
 import cats.effect.IO
 import com.sksamuel.scrimage.color.RGBColor
@@ -92,7 +92,8 @@ object ImageMatcher {
     }
   }
 
-  def matchLoop(image: ImmutableImage, x: Int, y: Int,
+  def matchLoop(image: ImmutableImage,
+                x: Int, y: Int,
                 stencil: ImmutableImage,
                 positive: (Int, Int) => Unit,
                 negative: (Int, Int) => Unit): Unit = {
@@ -125,7 +126,7 @@ object ImageMatcher {
                    ): IO[(Int, Double, Int, Int)] = {
     val multiplier = 30
     IO.parSequenceN(16)((for {
-      numMultiplied <- 0 until (11 * multiplier)
+      numMultiplied <- 0 until (11 * multiplier) // TODO: stencil.numItems
       num = numMultiplied.toDouble / multiplier
       stencil = stencilAt(num)
       xOff <- -10 to 10
@@ -159,7 +160,7 @@ object ImageMatcher {
           score -= 1 + otherFails
         },
       )
-      (score.toInt, num % 10, x + xOff, y)
+      (score.toInt, num % 10, x + xOff, y) // TODO: move modulo
     }).toList).map(_.maxBy(_._1))
   }
 }
