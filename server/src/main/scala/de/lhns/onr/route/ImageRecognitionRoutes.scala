@@ -134,7 +134,7 @@ class ImageRecognitionRoutes(config: Config,
   val apiRoutes: HttpRoutes[IO] = Rest.toRoutes(
     Api.getParameters.impl(_ => parametersRepo.get),
     Api.setParameters.impl(parametersRepo.set),
-    Api.detected.impl(_ => detectedIO.map(detectedNumber).map(_.toLong)),
+    Api.detected.impl(_ => detectedIO.map(detectedNumber)),
     Api.previewImage.impl(_ => imageIO.map(e => ImageJpg(e.bytes(PngWriter.MinCompression)))),
     Api.previewDetected.impl { _ =>
       for {
