@@ -90,6 +90,8 @@ lazy val server = project
   .settings(
     name := "optical-number-recognition",
 
+    Compile / mainClass := Some("de.lhns.onr.Server"),
+
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % "1.2.11",
       "co.fs2" %% "fs2-io" % V.fs2,
