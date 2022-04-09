@@ -126,7 +126,7 @@ class ImageRecognitionRoutes(config: Config,
     val orderedDigits = detectedDigits.sortBy(_.x).map(_.num)
     orderedDigits.foldRight("") {
       case (digit, string) =>
-        val roundedDigit: Int = Math.round(digit).toInt
+        val roundedDigit: Int = Math.round(digit).toInt % 10
         roundedDigit + string
     }.toLong
   }

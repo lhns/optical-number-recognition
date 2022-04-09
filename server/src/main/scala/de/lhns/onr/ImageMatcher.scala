@@ -160,7 +160,7 @@ object ImageMatcher {
           score -= 1 + otherFails
         },
       )
-      (score.toInt, num % 10, x + xOff, y) // TODO: move modulo
+      (score.toInt, num, x + xOff, y)
     }).toList).map(_.maxBy(_._1))
   }
 }
