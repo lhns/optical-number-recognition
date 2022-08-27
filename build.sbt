@@ -31,7 +31,7 @@ val V = new {
   val fs2 = "3.2.12"
   val http4s = "0.23.12"
   val scalajsReact = "2.0.0"
-  val scrimage = "4.0.31"
+  val scrimage = "4.0.32"
 }
 
 lazy val root = project.in(file("."))
