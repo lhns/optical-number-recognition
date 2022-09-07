@@ -28,10 +28,10 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
 val V = new {
   val catsEffect = "3.3.8"
   val circe = "0.14.1"
-  val fs2 = "3.2.12"
+  val fs2 = "3.2.13"
   val http4s = "0.23.12"
   val scalajsReact = "2.0.0"
-  val scrimage = "4.0.31"
+  val scrimage = "4.0.32"
 }
 
 lazy val root = project.in(file("."))
@@ -93,7 +93,7 @@ lazy val server = project
     Compile / mainClass := Some("de.lhns.onr.Server"),
 
     libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "ch.qos.logback" % "logback-classic" % "1.4.0",
       "co.fs2" %% "fs2-io" % V.fs2,
       "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
       "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
