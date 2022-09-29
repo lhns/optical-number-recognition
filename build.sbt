@@ -97,7 +97,7 @@ lazy val server = project
       "co.fs2" %% "fs2-io" % V.fs2,
       "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
       "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
-      "de.lolhens" %% "http4s-spa" % "0.4.0",
+      "de.lolhens" %% "http4s-spa" % "0.5.0",
       "de.lolhens" %% "remote-io-http4s" % "0.0.1",
       "io.circe" %% "circe-config" % "0.8.0",
       "org.http4s" %% "http4s-blaze-server" % V.http4s,
