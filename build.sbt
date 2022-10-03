@@ -93,7 +93,7 @@ lazy val server = project
     Compile / mainClass := Some("de.lhns.onr.Server"),
 
     libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.4.1",
+      "ch.qos.logback" % "logback-classic" % "1.4.3",
       "co.fs2" %% "fs2-io" % V.fs2,
       "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
       "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
