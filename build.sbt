@@ -2,37 +2,49 @@ ThisBuild / scalaVersion := "2.13.9"
 ThisBuild / name := (server / name).value
 name := (ThisBuild / name).value
 
+val V = new {
+  val catsEffect = "3.3.8"
+  val catsEffectUtils = "0.2.0"
+  val circe = "0.14.1"
+  val circeConfig = "0.10.0"
+  val fs2 = "3.3.0"
+  val http4s = "0.23.16"
+  val http4sDom = "0.2.0"
+  val http4sJdkHttpClient = "0.7.0"
+  val http4sSpa = "0.5.0"
+  val logbackClassic = "1.4.4"
+  val munit = "0.7.29"
+  val munitTaglessFinal = "0.2.0"
+  val remoteIo = "0.0.1"
+  val scalajsDom = "2.1.0"
+  val scalajsReact = "2.0.0"
+  val scrimage = "4.0.32"
+  val tess4j = "5.4.0"
+}
+
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   version := {
-    val Tag = "refs/tags/(.*)".r
+    val Tag = "refs/tags/v?([0-9]+(?:\\.[0-9]+)+(?:[+-].*)?)".r
     sys.env.get("CI_VERSION").collect { case Tag(tag) => tag }
       .getOrElse("0.0.1-SNAPSHOT")
   },
-
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-
+  libraryDependencies ++= Seq(
+    "ch.qos.logback" % "logback-classic" % V.logbackClassic % Test,
+    "de.lolhens" %% "munit-tagless-final" % V.munitTaglessFinal % Test,
+    "org.scalameta" %% "munit" % V.munit % Test,
+  ),
+  testFrameworks += new TestFramework("munit.Framework"),
   assembly / assemblyJarName := s"${name.value}-${version.value}.sh.bat",
-
   assembly / assemblyOption := (assembly / assemblyOption).value
     .withPrependShellScript(Some(AssemblyPlugin.defaultUniversalScript(shebang = false))),
-
   assembly / assemblyMergeStrategy := {
     case PathList(paths@_*) if paths.last == "module-info.class" => MergeStrategy.discard
-    case PathList("META-INF", "jpms.args") => MergeStrategy.discard
     case x =>
       val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)
   },
 )
-
-val V = new {
-  val catsEffect = "3.3.8"
-  val circe = "0.14.1"
-  val fs2 = "3.3.0"
-  val http4s = "0.23.12"
-  val scalajsReact = "2.0.0"
-  val scrimage = "4.0.32"
-}
 
 lazy val root = project.in(file("."))
   .settings(
@@ -45,8 +57,8 @@ lazy val common = crossProject(JVMPlatform, JSPlatform)
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "de.lolhens" %%% "cats-effect-utils" % "0.2.0",
-      "de.lolhens" %%% "remote-io-http4s" % "0.0.1",
+      "de.lolhens" %%% "cats-effect-utils" % V.catsEffectUtils,
+      "de.lolhens" %%% "remote-io-http4s" % V.remoteIo,
       "io.circe" %%% "circe-core" % V.circe,
       "io.circe" %%% "circe-generic" % V.circe,
       "io.circe" %%% "circe-parser" % V.circe,
@@ -67,8 +79,8 @@ lazy val frontend = project
     libraryDependencies ++= Seq(
       "com.github.japgolly.scalajs-react" %%% "core-bundle-cats_effect" % V.scalajsReact,
       "com.github.japgolly.scalajs-react" %%% "extra" % V.scalajsReact,
-      "org.scala-js" %%% "scalajs-dom" % "2.1.0",
-      "org.http4s" %%% "http4s-dom" % "0.2.0"
+      "org.http4s" %%% "http4s-dom" % V.http4sDom,
+      "org.scala-js" %%% "scalajs-dom" % V.scalajsDom,
     ),
 
     scalaJSLinkerConfig ~= {
@@ -93,15 +105,16 @@ lazy val server = project
     Compile / mainClass := Some("de.lhns.onr.Server"),
 
     libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.4.4",
+      "ch.qos.logback" % "logback-classic" % V.logbackClassic,
       "co.fs2" %% "fs2-io" % V.fs2,
+      "com.hunorkovacs" %% "circe-config" % V.circeConfig,
       "com.sksamuel.scrimage" %% "scrimage-scala" % V.scrimage,
       "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
-      "de.lolhens" %% "http4s-spa" % "0.4.0",
-      "de.lolhens" %% "remote-io-http4s" % "0.0.1",
-      "io.circe" %% "circe-config" % "0.8.0",
-      "org.http4s" %% "http4s-blaze-server" % V.http4s,
+      "de.lolhens" %% "http4s-spa" % V.http4sSpa,
+      "de.lolhens" %% "remote-io-http4s" % V.remoteIo,
+      "net.sourceforge.tess4j" % "tess4j" % V.tess4j,
+      "org.http4s" %% "http4s-ember-server" % V.http4s,
       "org.http4s" %% "http4s-dsl" % V.http4s,
-      "org.http4s" %% "http4s-jdk-http-client" % "0.7.0",
+      "org.http4s" %% "http4s-jdk-http-client" % V.http4sJdkHttpClient,
     )
   )

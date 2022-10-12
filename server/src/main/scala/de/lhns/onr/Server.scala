@@ -1,16 +1,22 @@
 package de.lhns.onr
 
 import cats.effect.{ExitCode, IO, IOApp, Resource}
+import com.comcast.ip4s._
 import de.lhns.onr.repo.ParametersRepo
 import de.lhns.onr.route.{ImageRecognitionRoutes, UiRoutes}
 import io.circe.syntax._
-import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.server.Router
+import org.http4s.HttpApp
+import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.middleware.ErrorAction
+import org.http4s.server.{Router, Server}
+import org.log4s.getLogger
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 object Server extends IOApp {
+  private val logger = getLogger
+
   override def run(args: List[String]): IO[ExitCode] = {
     val configPath = args.headOption.map(Paths.get(_)).getOrElse(throw new IllegalArgumentException("Missing command line parameter: config path"))
 
@@ -45,19 +51,30 @@ object Server extends IOApp {
     applicationResource(config, parametersRepo).use(_ => IO.never)
   }
 
-  private def applicationResource(config: Config, parametersRepo: ParametersRepo[IO]): Resource[IO, Unit] = {
+  private def applicationResource(config: Config, parametersRepo: ParametersRepo[IO]): Resource[IO, Unit] =
     for {
       imageRecognitionRoutes <- ImageRecognitionRoutes(config, parametersRepo)
       uiRoutes = new UiRoutes()
-      _ <- BlazeServerBuilder[IO]
-        .withResponseHeaderTimeout(GlobalTimeout.timeout)
-        .bindHttp(8080, "0.0.0.0")
-        .withHttpApp(Router(
+      _ <- serverResource(
+        host"0.0.0.0",
+        port"8080",
+        Router(
           "/" -> uiRoutes.toRoutes,
           "/api" -> imageRecognitionRoutes.apiRoutes,
           "/metrics" -> imageRecognitionRoutes.metricsRoutes
-        ).orNotFound)
-        .resource
+        ).orNotFound
+      )
     } yield ()
-  }
+
+
+  def serverResource(host: Host, port: Port, http: HttpApp[IO]): Resource[IO, Server] =
+    EmberServerBuilder.default[IO]
+      .withHost(host)
+      .withPort(port)
+      .withHttpApp(ErrorAction.log(
+        http = http,
+        messageFailureLogAction = (t, msg) => IO(logger.debug(t)(msg)),
+        serviceErrorLogAction = (t, msg) => IO(logger.error(t)(msg))
+      ))
+      .build
 }
