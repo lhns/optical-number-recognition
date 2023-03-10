@@ -14,6 +14,7 @@ import de.lhns.onr.Api.ImageJpg
 import de.lhns.onr.ImageMatcher.Stencil
 import de.lhns.onr.Parameters.Vec2
 import de.lhns.onr._
+import de.lhns.onr.camera.{Camera, EspCam}
 import de.lhns.onr.repo.ParametersRepo
 import de.lolhens.cats.effect.utils.CatsEffectUtils._
 import de.lolhens.remoteio.Rest
@@ -23,36 +24,15 @@ import org.http4s.jdkhttpclient.JdkHttpClient
 import org.log4s.getLogger
 
 import java.awt
-import java.nio.file.{Files, Paths}
+import java.nio.file.Files
+import scala.concurrent.duration._
 
 class ImageRecognitionRoutes(config: Config,
+                             camera: Camera[IO],
                              parametersRepo: ParametersRepo[IO],
                              stencilIO: IO[Stencil],
                             ) {
   private val logger = getLogger
-
-  private val cam = EspCam(config.espCam.uri, config.espCam.credentials)
-
-  private val imageIO: IO[ImmutableImage] =
-    JdkHttpClient.simple[IO].use { client =>
-      cam.takePicture(client)
-    }.map {
-      case None =>
-        throw new RuntimeException("Failed to take picture")
-      case Some(bytes) =>
-        ImageCleanup.cleanup(
-          ImmutableImage.loader().fromBytes(bytes),
-          thesholdFactor = 0.7
-        ).max(800, 600)
-    }.cacheForUnsafe(config.cacheDuration)
-
-  private val imageIO2: IO[ImmutableImage] =
-    IO.blocking(Files.readAllBytes(Paths.get("images/IMG_20220401_185456.jpg"))).map { bytes =>
-      ImageCleanup.cleanup(
-        ImmutableImage.loader().fromBytes(bytes),
-        thesholdFactor = 0.7
-      ).max(800, 600)
-    }.memoizeUnsafe
 
   case class DetectedDigit(x: Int, y: Int, num: Double)
 
@@ -87,18 +67,18 @@ class ImageRecognitionRoutes(config: Config,
     val ref = Ref.unsafe[IO, Option[((ImmutableImage, Parameters), Deferred[IO, Option[Seq[DetectedDigit]]])]](None)
     detectionSemaphore.permit.use { _ =>
       (
-        imageIO,
+        camera.takePicture,
         parametersRepo.get,
         ).parTupled.flatMapOnChangeWithRef(ref) {
         case (image, parameters) =>
           val time = System.currentTimeMillis()
-          logger.info("Detection started")
+          logger.info("detection started")
           detect(image, parameters).guaranteeCase {
             case Succeeded(_) =>
-              IO(logger.info(s"Detection finished after ${System.currentTimeMillis() - time}"))
+              IO(logger.info(s"detection finished after ${System.currentTimeMillis() - time}"))
 
             case outcome =>
-              IO(logger.error(s"Detection failed after ${System.currentTimeMillis() - time}: $outcome"))
+              IO(logger.error(s"detection failed after ${System.currentTimeMillis() - time}: $outcome"))
           }
       }
     }.uncancelable
@@ -135,10 +115,10 @@ class ImageRecognitionRoutes(config: Config,
     Api.getParameters.impl(_ => parametersRepo.get),
     Api.setParameters.impl(parametersRepo.set),
     Api.detected.impl(_ => detectedIO.map(detectedNumber)),
-    Api.previewImage.impl(_ => imageIO.map(e => ImageJpg(e.bytes(PngWriter.MinCompression)))),
+    Api.previewImage.impl(_ => camera.takePicture.map(e => ImageJpg(e.bytes(PngWriter.MinCompression)))),
     Api.previewDetected.impl { _ =>
       for {
-        image <- imageIO
+        image <- camera.takePicture
         detected <- detectedIO
         preview <- detectionPreview(image, detected)
       } yield
@@ -166,7 +146,7 @@ object ImageRecognitionRoutes {
     for {
       stencilFiber <- Resource.eval((
         for {
-          _ <- IO(logger.info("Loading Image Recognition..."))
+          _ <- IO(logger.info("loading image recognition..."))
           stencil <- IO.defer {
             Stencil.prepare(
               ImmutableImage.loader().fromBytes(
@@ -176,13 +156,34 @@ object ImageRecognitionRoutes {
               border = 20,
             )
           }
-          _ <- IO(logger.info("Loaded Image Recognition!"))
+          _ <- IO(logger.info("loaded image recognition!"))
         } yield
           stencil).start)
-    } yield
-      new ImageRecognitionRoutes(
-        config,
-        parametersRepo,
-        stencilFiber.joinWithNever,
+      client <- JdkHttpClient.simple[IO]
+      camera = EspCam(
+        client,
+        config.espCam.uri,
+        config.espCam.credentials
       )
+      camera <- Resource.pure(Camera.threshold(
+        camera,
+        image => IO(Camera.averageBrightness(image)),
+        invert = IO(true)
+      ))
+      camera <- Resource.pure(Camera.bounds(
+        camera,
+        800,
+        600
+      ))
+      camera <- Resource.eval(Camera.cache(
+        camera,
+        10.seconds,
+        1.minute
+      ))
+    } yield new ImageRecognitionRoutes(
+      config,
+      camera,
+      parametersRepo,
+      stencilFiber.joinWithNever,
+    )
 }

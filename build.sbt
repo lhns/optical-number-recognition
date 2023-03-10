@@ -19,7 +19,6 @@ val V = new {
   val scalajsDom = "2.1.0"
   val scalajsReact = "2.0.0"
   val scrimage = "4.0.32"
-  val tess4j = "5.4.0"
 }
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
@@ -112,7 +111,6 @@ lazy val server = project
       "com.sksamuel.scrimage" % "scrimage-filters" % V.scrimage,
       "de.lolhens" %% "http4s-spa" % V.http4sSpa,
       "de.lolhens" %% "remote-io-http4s" % V.remoteIo,
-      "net.sourceforge.tess4j" % "tess4j" % V.tess4j,
       "org.http4s" %% "http4s-ember-server" % V.http4s,
       "org.http4s" %% "http4s-dsl" % V.http4s,
       "org.http4s" %% "http4s-jdk-http-client" % V.http4sJdkHttpClient,
