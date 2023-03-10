@@ -13,13 +13,13 @@ object Converter {
     Files.list(inputDir)
       .iterator.asScala
       .filter(e => e.getFileName.toString.matches(".*\\.jpe?g")).foreach { file =>
-      ImageCleanup.cleanup(
-        ImmutableImage.loader().fromPath(file),
-        thesholdFactor = 0.7
-      ).output(
-        PngWriter.MinCompression,
-        outputDir.resolve(file.getFileName)
-      )
+      //ImageCleanup.cleanup(
+      ImmutableImage.loader().fromPath(file)
+        //thesholdFactor = 0.7
+        .output(
+          PngWriter.MinCompression,
+          outputDir.resolve(file.getFileName)
+        )
     }
   }
 }
