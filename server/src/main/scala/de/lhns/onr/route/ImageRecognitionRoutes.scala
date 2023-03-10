@@ -159,7 +159,7 @@ object ImageRecognitionRoutes {
           _ <- IO(logger.info("loaded image recognition!"))
         } yield
           stencil).start)
-      client <- JdkHttpClient.simple[IO]
+      client <- Resource.eval(JdkHttpClient.simple[IO])
       camera = EspCam(
         client,
         config.espCam.uri,
