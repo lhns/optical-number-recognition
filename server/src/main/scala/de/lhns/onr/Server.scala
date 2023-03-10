@@ -1,6 +1,6 @@
 package de.lhns.onr
 
-import cats.effect.{ExitCode, IO, IOApp, Resource}
+import cats.effect._
 import com.comcast.ip4s._
 import de.lhns.onr.repo.ParametersRepo
 import de.lhns.onr.route.{ImageRecognitionRoutes, UiRoutes}
@@ -13,6 +13,7 @@ import org.log4s.getLogger
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+import scala.concurrent.duration._
 
 object Server extends IOApp {
   private val logger = getLogger
@@ -56,8 +57,7 @@ object Server extends IOApp {
       imageRecognitionRoutes <- ImageRecognitionRoutes(config, parametersRepo)
       uiRoutes = new UiRoutes()
       _ <- serverResource(
-        host"0.0.0.0",
-        port"8080",
+        SocketAddress(host"0.0.0.0", port"8080"),
         Router(
           "/" -> uiRoutes.toRoutes,
           "/api" -> imageRecognitionRoutes.apiRoutes,
@@ -66,15 +66,15 @@ object Server extends IOApp {
       )
     } yield ()
 
-
-  def serverResource(host: Host, port: Port, http: HttpApp[IO]): Resource[IO, Server] =
-    EmberServerBuilder.default[IO]
-      .withHost(host)
-      .withPort(port)
+  def serverResource[F[_] : Async](socketAddress: SocketAddress[Host], http: HttpApp[F]): Resource[F, Server] =
+    EmberServerBuilder.default[F]
+      .withHost(socketAddress.host)
+      .withPort(socketAddress.port)
       .withHttpApp(ErrorAction.log(
         http = http,
-        messageFailureLogAction = (t, msg) => IO(logger.debug(t)(msg)),
-        serviceErrorLogAction = (t, msg) => IO(logger.error(t)(msg))
+        messageFailureLogAction = (t, msg) => Async[F].delay(logger.debug(t)(msg)),
+        serviceErrorLogAction = (t, msg) => Async[F].delay(logger.error(t)(msg))
       ))
+      .withShutdownTimeout(1.second)
       .build
 }
