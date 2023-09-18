@@ -18,7 +18,7 @@ val V = new {
   val remoteIo = "0.0.1"
   val scalajsDom = "2.1.0"
   val scalajsReact = "2.0.0"
-  val scrimage = "4.0.39"
+  val scrimage = "4.0.42"
 }
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
