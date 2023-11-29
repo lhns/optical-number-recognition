@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "2.13.11"
+ThisBuild / scalaVersion := "2.13.12"
 ThisBuild / name := (server / name).value
 name := (ThisBuild / name).value
 
@@ -7,18 +7,18 @@ val V = new {
   val catsEffectUtils = "0.2.0"
   val circe = "0.14.1"
   val circeConfig = "0.10.0"
-  val fs2 = "3.9.1"
-  val http4s = "0.23.23"
+  val fs2 = "3.9.3"
+  val http4s = "0.23.24"
   val http4sDom = "0.2.0"
   val http4sJdkHttpClient = "0.9.1"
   val http4sSpa = "0.6.1"
-  val logbackClassic = "1.4.11"
+  val logbackClassic = "1.4.13"
   val munit = "0.7.29"
   val munitTaglessFinal = "0.2.0"
   val remoteIo = "0.0.1"
   val scalajsDom = "2.1.0"
   val scalajsReact = "2.0.0"
-  val scrimage = "4.0.39"
+  val scrimage = "4.0.42"
 }
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
