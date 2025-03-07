@@ -8,17 +8,17 @@ val V = new {
   val circe = "0.14.1"
   val circeConfig = "0.10.0"
   val fs2 = "3.11.0"
-  val http4s = "0.23.24"
+  val http4s = "0.23.30"
   val http4sDom = "0.2.0"
   val http4sJdkHttpClient = "0.9.2"
   val http4sSpa = "0.6.1"
-  val logbackClassic = "1.4.14"
+  val logbackClassic = "1.5.17"
   val munit = "0.7.29"
   val munitTaglessFinal = "0.2.0"
   val remoteIo = "0.0.1"
   val scalajsDom = "2.1.0"
   val scalajsReact = "2.0.0"
-  val scrimage = "4.1.3"
+  val scrimage = "4.3.0"
 }
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
