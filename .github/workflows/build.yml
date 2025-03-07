@@ -31,10 +31,6 @@ jobs:
           cache: 'sbt'
           gpg-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
       - uses: sbt/setup-sbt@v1
-      - name: Test
-        env:
-          CI_VERSION: ${{ github.ref }}
-          SBT_OPTS: '-Xmx2G'
       - name: SBT Build
         env:
           CI_VERSION: ${{ github.ref }}
