@@ -101,11 +101,11 @@ object ImageRecognitionRoutes {
         config.espCam.uri,
         config.espCam.credentials
       ))
-      camera <- Resource.pure(Camera.bounds(
+      camera <- Resource.pure(Camera.grayscale(Camera.bounds(
         camera,
         800,
         600
-      ))
+      )))
       camera <- Resource.eval(Camera.cache(
         camera,
         15.seconds,

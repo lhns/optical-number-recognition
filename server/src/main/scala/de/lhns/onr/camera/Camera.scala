@@ -6,6 +6,7 @@ import cats.effect.syntax.all._
 import cats.effect.{Async, Clock, Ref}
 import cats.syntax.all._
 import com.sksamuel.scrimage.ImmutableImage
+import com.sksamuel.scrimage.color.GrayscaleMethod
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -60,6 +61,11 @@ object Camera {
           image
       }
     }
+  }
+
+  def grayscale[F[_] : Monad](camera: Camera[F]): Camera[F] = new Camera[F] {
+    override def takePicture: F[ImmutableImage] =
+      camera.takePicture.map(_.toGrayscale(GrayscaleMethod.AVERAGE))
   }
 
   def bounds[F[_] : Monad](camera: Camera[F], width: Int, height: Int): Camera[F] = new Camera[F] {
