@@ -4,9 +4,12 @@ import cats.effect._
 import com.comcast.ip4s._
 import de.lhns.onr.repo.ParametersRepo
 import de.lhns.onr.route.{ImageRecognitionRoutes, UiRoutes}
+import de.lhns.onr.service.DetectionServiceAiImpl
 import io.circe.syntax._
 import org.http4s.HttpApp
+import org.http4s.client.Client
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.jdkhttpclient.JdkHttpClient
 import org.http4s.server.middleware.ErrorAction
 import org.http4s.server.{Router, Server}
 import org.log4s.getLogger
@@ -54,7 +57,13 @@ object Server extends IOApp {
 
   private def applicationResource(config: Config, parametersRepo: ParametersRepo[IO]): Resource[IO, Unit] =
     for {
-      imageRecognitionRoutes <- ImageRecognitionRoutes(config, parametersRepo)
+      implicit0(client: Client[IO]) <- JdkHttpClient.simple[IO]
+      imageRecognitionRoutes <- ImageRecognitionRoutes(
+        client,
+        config,
+        new DetectionServiceAiImpl[IO](config.ollamaApiUri),
+        parametersRepo
+      )
       uiRoutes = new UiRoutes()
       _ <- serverResource(
         SocketAddress(host"0.0.0.0", port"8080"),

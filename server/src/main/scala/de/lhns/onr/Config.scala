@@ -9,8 +9,8 @@ import java.nio.file.{Path, Paths}
 import scala.concurrent.duration.FiniteDuration
 
 case class Config(
-                   stencilPath: Path,
                    espCam: EspCamConfig,
+                   ollamaApiUri: Uri,
                    metricName: String,
                    decimalPlace: Option[Int],
                    cacheDuration: FiniteDuration,
@@ -23,6 +23,11 @@ object Config {
     Encoder.encodeString.contramap(_.toString)
   )
 
+  private implicit val uriCodec: Codec[Uri] = Codec.from(
+    Decoder.decodeString.map(Uri.unsafeFromString),
+    Encoder.encodeString.contramap(_.toString)
+  )
+
   private implicit val finiteDurationCodec: Codec[FiniteDuration] = Codec.from(
     io.circe.config.syntax.durationDecoder,
     Encoder.encodeString.contramap(_.toString)
@@ -30,8 +35,8 @@ object Config {
 
   implicit val codec: Codec[Config] = {
     case class ConfigSurrogate(
-                                stencilPath: Path,
                                 espCam: EspCamConfig,
+                                ollamaApiUri: Uri,
                                 metricName: String,
                                 decimalPlace: Option[Int],
                                 cacheDuration: FiniteDuration,
@@ -40,8 +45,8 @@ object Config {
 
     val codec: Codec[ConfigSurrogate] = deriveCodec
     Codec.from(
-      codec.map(e => Config(e.stencilPath, e.espCam, e.metricName, e.decimalPlace, e.cacheDuration, e.state.getOrElse(Parameters.empty))),
-      codec.contramap(e => ConfigSurrogate(e.stencilPath, e.espCam, e.metricName, e.decimalPlace, e.cacheDuration, Some(e.parameters)))
+      codec.map(e => Config(e.espCam, e.ollamaApiUri, e.metricName, e.decimalPlace, e.cacheDuration, e.state.getOrElse(Parameters.empty))),
+      codec.contramap(e => ConfigSurrogate(e.espCam, e.ollamaApiUri, e.metricName, e.decimalPlace, e.cacheDuration, Some(e.parameters)))
     )
   }
 
